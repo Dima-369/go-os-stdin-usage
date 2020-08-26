@@ -33,3 +33,39 @@ func main() {
 	}
 }
 ```
+
+# Send stdin to exec.Command()
+
+Running the application below is equivalent to this piping: `echo "this is from StdinPipe" | cat`
+
+```go
+package main
+
+import (
+	"io"
+	"os/exec"
+)
+
+func main() {
+	cmd := exec.Command("cat")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		defer stdin.Close()
+		_, err = io.WriteString(stdin, "this is from StdinPipe")
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		panic(err)
+	}
+
+	println(string(out))
+}
+```
